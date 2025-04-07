@@ -49,7 +49,8 @@ __global__ void ptr2ind_kernel(const int64_t *ptr_data, int64_t *out_data,
   }
 }
 
-std::vector<paddle::Tensor> ptr2ind_cuda(const paddle::Tensor &ptr, int64_t E) {
+std::vector<paddle::Tensor> ptr2ind_cuda_forward(const paddle::Tensor &ptr,
+                                                 int64_t E) {
   CHECK_CUDA(ptr);
 
   auto out = paddle::empty({E}, ptr.dtype(), ptr.place());

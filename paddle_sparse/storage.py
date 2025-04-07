@@ -3,7 +3,7 @@ import warnings
 from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import paddle
-import paddle_sparse_ops
+import paddle_sparse.ops as paddle_sparse_ops
 from paddle_scatter import scatter_add, segment_csr
 
 from paddle_sparse.utils import Final, index_sort
@@ -343,7 +343,7 @@ class SparseStorage(object):
 
         idx = self.sparse_size(1) * self.row() + self.col()
 
-        row = paddle.div(idx, num_cols, rounding_mode="floor")
+        row = paddle.floor(idx / num_cols).to(dtype=paddle.int64)
         col = idx % num_cols
         assert row.dtype == paddle.int64 and col.dtype == paddle.int64
 
@@ -446,7 +446,9 @@ class SparseStorage(object):
         return csc2csr
 
     def is_coalesced(self) -> bool:
-        idx = self._col.new_full((self._col.numel() + 1,), -1)
+        idx = paddle.full((self._col.numel() + 1,), -1, dtype=self._col.dtype).to(
+            self._col.place
+        )
         idx[1:] = self._sparse_sizes[1] * self.row() + self._col
         return bool((idx[1:] > idx[:-1]).all())
 
